@@ -62,9 +62,9 @@ dependencies {
 }
 
 // GitHub Maven 插件
-//apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.github.dcendents.android-maven'
 // github 的用户名
-//group = 'com.github.annocjx'
+group = 'com.github.annocjx'
 
 
-apply from: '../upload.gradle'
+//apply from: '../upload.gradle'

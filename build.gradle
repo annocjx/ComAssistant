@@ -1,0 +1,34 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+       // maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+       // maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter' }
+        jcenter()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.0.1'
+        // GitHub Maven 插件
+        classpath "com.github.dcendents:android-maven-gradle-plugin:2.1"
+    }
+   
+}
+
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+        //maven {
+            //url 'http://localhost:8081/nexus/content/repositories/test/'
+          //  url 'http://192.168.3.29:8081/repository/test/'
+      //  }
+       // maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+       // maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter' }
+        jcenter()
+        google()
+    }
+    
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+        options.addStringOption('encoding', 'UTF-8')
+    }
+}

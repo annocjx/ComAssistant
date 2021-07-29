@@ -37,35 +37,35 @@ import android_serialport_api.SerialPortFinder;
  */
 public class SerialPortActivity extends FragmentActivity {
 
-    private RecyclerView recy;
-    private Spinner spSerial;
-    private EditText edInput;
-    private Button btSend;
-    private SerialPortFinder serialPortFinder;
-    private AbstractSerialHelper serialHelper;
-    private Spinner spBote;
-    private Button btOpen, btSave, btClear;
-    private AbstractCommonAdapter logListAdapter;
-    private List<ComBean> logs;
+    private RecyclerView mRecyclerView;
+    private Spinner mSpSerial;
+    private EditText mEdInput;
+    private Button mBtSend;
+    private SerialPortFinder mSerialPortFinder;
+    private AbstractSerialHelper mSerialHelper;
+    private Spinner mSpBote;
+    private Button mBtOpen, mBtSave, mBtClear;
+    private AbstractCommonAdapter mLoglistadapter;
+    private List<ComBean> mLogs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_helper);
-        recy = findViewById(R.id.recy);
-        spSerial = findViewById(R.id.sp_serial);
-        edInput = findViewById(R.id.ed_input);
-        btSend = findViewById(R.id.bt_send);
-        spBote = findViewById(R.id.sp_bote);
-        btOpen = findViewById(R.id.bt_open);
-        btClear = findViewById(R.id.bt_clear);
+        mRecyclerView = findViewById(R.id.recy);
+        mSpSerial = findViewById(R.id.sp_serial);
+        mEdInput = findViewById(R.id.ed_input);
+        mBtSend = findViewById(R.id.bt_send);
+        mSpBote = findViewById(R.id.sp_bote);
+        mBtOpen = findViewById(R.id.bt_open);
+        mBtClear = findViewById(R.id.bt_clear);
 
 
-        logs = new ArrayList<>();
+        mLogs = new ArrayList<>();
         findViewById(R.id.bt_save).setOnClickListener(v -> {
-            save(logs);
+            save(mLogs);
         });
-        logListAdapter = new AbstractCommonAdapter<ComBean>(this, R.layout.item_layout, logs) {
+        mLoglistadapter = new AbstractCommonAdapter<ComBean>(this, R.layout.item_layout, mLogs) {
             @Override
             public void convert(BaseVH holder, ComBean bean, int postion) {
                 TextView tv = holder.getView(R.id.textView);
@@ -74,50 +74,50 @@ public class SerialPortActivity extends FragmentActivity {
                 tv.setText(bean.sRecTime + ":   " + FuncUtil.ByteArrToHex(bean.bRec));
             }
         };
-        recy.setLayoutManager(new LinearLayoutManager(this));
-        recy.setAdapter(logListAdapter);
-        recy.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setAdapter(mLoglistadapter);
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
        
 
 
         iniview();
 
-        findViewById(R.id.textView2).setOnClickListener(v -> save(logs));
+        findViewById(R.id.textView2).setOnClickListener(v -> save(mLogs));
     }
 
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        serialHelper.close();
-       /* serialHelper = new AbstractSerialHelper(bote) {
-            @Override
-            protected void onDataReceived(ComBean var1) {
-
-            }
-        };
-        try {
-            serialHelper.open(true);
-        } catch (IOException pE) {
-            pE.printStackTrace();
-            Tip.popTip(App.get(), "打开串口失败:" + pE.toString());
-        }
-        */
-        //H.restartAppByAlarm(this, 300);
+        mSerialHelper.close();
     }
 
     private void iniview() {
-        serialPortFinder = new SerialPortFinder();
-        final String[] ports = serialPortFinder.getAllDevicesPath();
+        mSerialPortFinder = new SerialPortFinder();
+        final String[] ports = mSerialPortFinder.getAllDevicesPath();
         SpAdapter spAdapter = new SpAdapter(this);
         spAdapter.setDatas(ports);
-        spSerial.setAdapter(spAdapter);
-        spSerial.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mSpSerial.setAdapter(spAdapter);
+
+        mSerialHelper = new AbstractSerialHelper("",0) {
+            @Override
+            protected void onDataReceived(ComBean comBean) {
+                mLogs.add(comBean);
+                Log.i(mSerialHelper.toString() + ":收到串口数据0: ", "" + FuncUtil.ByteArrToHex(comBean.bRec));
+                mRecyclerView.post(()->{
+                    mRecyclerView.smoothScrollToPosition(mLoglistadapter.getItemCount() - 1);
+                    mLoglistadapter.notifyDataSetChanged();
+                });
+            }
+        };
+        
+        
+        mSpSerial.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //serialHelper.close();
-                serialHelper.setPort(ports[position]);
-                btOpen.setEnabled(true);
+                mSerialHelper.close();
+                mSerialHelper.setPort(ports[position]);
+                mBtOpen.setEnabled(true);
             }
 
             @Override
@@ -133,14 +133,14 @@ public class SerialPortActivity extends FragmentActivity {
                 "2500000", "3000000", "3500000", "4000000"};
         SpAdapter spAdapter2 = new SpAdapter(this);
         spAdapter2.setDatas(boteArr);
-        spBote.setAdapter(spAdapter2);
+        mSpBote.setAdapter(spAdapter2);
         //spBote.setSelection(13);
-        spBote.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mSpBote.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //serialHelper.close();
-                serialHelper.setBaudRate(boteArr[position]);
-                btOpen.setEnabled(true);
+                mSerialHelper.close();
+                mSerialHelper.setBaudRate(boteArr[position]);
+                mBtOpen.setEnabled(true);
             }
 
             @Override
@@ -149,59 +149,52 @@ public class SerialPortActivity extends FragmentActivity {
             }
         });
 
-        serialHelper = new AbstractSerialHelper("",0) {
-
-            @Override
-            protected void onDataReceived(ComBean comBean) {
-                logs.add(comBean);
-                Log.i(serialHelper.toString() + ":收到串口数据: ", "" + FuncUtil.ByteArrToHex(comBean.bRec));
-                recy.smoothScrollToPosition(logListAdapter.getItemCount() - 1);
-                logListAdapter.notifyDataSetChanged();
-            }
-        };
-        btOpen.setOnClickListener(new View.OnClickListener() {
+      
+        mBtOpen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
-                    closeInputMethod(SerialPortActivity.this, edInput);
-                    if (TextUtils.isEmpty(serialHelper.getPort())||serialHelper.getBaudRate()==0){
+                    closeInputMethod(SerialPortActivity.this, mEdInput);
+                    if (TextUtils.isEmpty(mSerialHelper.getPort())|| mSerialHelper.getBaudRate()==0){
                         return;
                     }
-                    serialHelper.close();
-                    serialHelper = new AbstractSerialHelper(serialHelper.getPort(),serialHelper.getBaudRate()) {
+                    mSerialHelper.close();
+                    mSerialHelper = new AbstractSerialHelper(mSerialHelper.getPort(), mSerialHelper.getBaudRate()) {
 
                         @Override
                         protected void onDataReceived(ComBean comBean) {
-                            logs.add(comBean);
-                            Log.i(serialHelper.toString() + ":收到串口数据: ", "" + FuncUtil.ByteArrToHex(comBean.bRec));
-                            recy.smoothScrollToPosition(logListAdapter.getItemCount() - 1);
-                            logListAdapter.notifyDataSetChanged();
+                            mLogs.add(comBean);
+                            Log.i(mSerialHelper.toString() + ":收到串口数据: ", "" + FuncUtil.ByteArrToHex(comBean.bRec));
+                            mRecyclerView.post(()->{
+                                mRecyclerView.smoothScrollToPosition(mLoglistadapter.getItemCount() - 1);
+                                mLoglistadapter.notifyDataSetChanged();
+                            });
                         }
                     };
-                    serialHelper.open(false);
-                    btOpen.setEnabled(false);
+                    mSerialHelper.open(false);
+                    mBtOpen.setEnabled(false);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         });
-        btClear.setOnClickListener(new View.OnClickListener() {
+        mBtClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                logs.clear();
-                logListAdapter.notifyDataSetChanged();
+                mLogs.clear();
+                mLoglistadapter.notifyDataSetChanged();
             }
         });
 
         RadioGroup radioGroup = findViewById(R.id.radioGroup);
-        btSend.setOnClickListener(new View.OnClickListener() {
+        mBtSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (radioGroup.getCheckedRadioButtonId() == R.id.radioButton1) {
-                    btSend.setText("发送Text");
-                    if (edInput.getText().toString().length() > 0) {
-                        if (serialHelper.isOpen()) {
-                            serialHelper.sendTxt(edInput.getText().toString());
+                    mBtSend.setText("发送Text");
+                    if (mEdInput.getText().toString().length() > 0) {
+                        if (mSerialHelper.isOpen()) {
+                            mSerialHelper.sendTxt(mEdInput.getText().toString());
                         } else {
                             Toast.makeText(getBaseContext(), "串口还没打开", Toast.LENGTH_SHORT).show();
                         }
@@ -209,20 +202,20 @@ public class SerialPortActivity extends FragmentActivity {
                         Toast.makeText(getBaseContext(), "填数据", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    if (edInput.getText().toString().length() > 0) {
-                        if (serialHelper.isOpen()) {
-                            serialHelper.sendHex(edInput.getText().toString());
+                    if (mEdInput.getText().toString().length() > 0) {
+                        if (mSerialHelper.isOpen()) {
+                            mSerialHelper.sendHex(mEdInput.getText().toString());
                         } else {
                             Toast.makeText(getBaseContext(), "串口还没打开", Toast.LENGTH_SHORT).show();
                         }
                     } else {
                         Toast.makeText(getBaseContext(), "填数据", Toast.LENGTH_SHORT).show();
                     }
-                    btSend.setText("发送Hex");
+                    mBtSend.setText("发送Hex");
                 }
             }
         });
-        closeInputMethod(this, btSend);
+        closeInputMethod(this, mBtSend);
     }
 
     /**

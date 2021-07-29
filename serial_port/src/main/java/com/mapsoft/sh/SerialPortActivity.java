@@ -149,7 +149,16 @@ public class SerialPortActivity extends FragmentActivity {
             }
         });
 
+        serialHelper = new AbstractSerialHelper("",0) {
 
+            @Override
+            protected void onDataReceived(ComBean comBean) {
+                logs.add(comBean);
+                Log.i(serialHelper.toString() + ":收到串口数据: ", "" + FuncUtil.ByteArrToHex(comBean.bRec));
+                recy.smoothScrollToPosition(logListAdapter.getItemCount() - 1);
+                logListAdapter.notifyDataSetChanged();
+            }
+        };
         btOpen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

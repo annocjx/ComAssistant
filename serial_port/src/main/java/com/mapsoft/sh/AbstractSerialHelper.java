@@ -47,11 +47,15 @@ public abstract class AbstractSerialHelper {
     private ReadThread mReadThread;
     private SendThread mSendThread;
     private String sPort;
-    private int iBaudRate = 9600;
+    private int iBaudRate ;
     private boolean _isOpen;
     private byte[] _bLoopData;
     private int iDelay;
 
+    public AbstractSerialHelper(String sPort, String sBaudRate) {
+        this(sPort, Integer.parseInt(sBaudRate));
+    }
+    
     public AbstractSerialHelper(String pSPort, int pIBaudRate) {
         sPort = pSPort;
         iBaudRate = pIBaudRate;
@@ -59,23 +63,8 @@ public abstract class AbstractSerialHelper {
         _bLoopData = new byte[]{48};
         iDelay = 500;
     }
-
-    public AbstractSerialHelper() {
-        this("/dev/ttyS4", 9600);
-    }
-
-    public AbstractSerialHelper(String sPort) {
-        this(sPort, 9600);
-    }
-
-    public AbstractSerialHelper(int bote) {
-        this();
-        sPort = bote + "";
-    }
-
-    public AbstractSerialHelper(String sPort, String sBaudRate) {
-        this(sPort, Integer.parseInt(sBaudRate));
-    }
+    
+  
 
     public InputStream open() throws SecurityException, IOException, InvalidParameterException {
         return open(false);

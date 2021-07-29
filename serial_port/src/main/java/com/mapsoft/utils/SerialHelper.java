@@ -32,21 +32,8 @@ public abstract class SerialHelper {
         this._isOpen = false;
         this._bLoopData = new byte[]{48};
         this.iDelay = 500;
-        this.sPort = sPort;
-        this.iBaudRate = iBaudRate;
     }
-
-    public SerialHelper() {
-        this("/dev/ttyS4", 9600);
-    }
-
-    public SerialHelper(String sPort) {
-        this(sPort, 9600);
-    }
-
-    public SerialHelper(String sPort, String sBaudRate) {
-        this(sPort, Integer.parseInt(sBaudRate));
-    }
+    
 
     public void open() throws SecurityException, IOException, InvalidParameterException {
         this.mSerialPort = new SerialPort(new File(this.sPort), this.iBaudRate, 0);
@@ -96,11 +83,11 @@ public abstract class SerialHelper {
         return this.iBaudRate;
     }
 
-    public boolean setBaudRate(int iBaud) {
+    public boolean setBaudRate(int baudrate) {
         if (this._isOpen) {
             return false;
         } else {
-            this.iBaudRate = iBaud;
+            this.iBaudRate = baudrate;
             return true;
         }
     }
@@ -114,11 +101,11 @@ public abstract class SerialHelper {
         return this.sPort;
     }
 
-    public boolean setPort(String sPort) {
+    public boolean setPort(String port) {
         if (this._isOpen) {
             return false;
         } else {
-            this.sPort = sPort;
+            this.sPort = port;
             return true;
         }
     }

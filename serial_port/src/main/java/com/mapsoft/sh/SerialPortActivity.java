@@ -3,6 +3,7 @@ package com.mapsoft.sh;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -76,16 +77,7 @@ public class SerialPortActivity extends FragmentActivity {
         recy.setLayoutManager(new LinearLayoutManager(this));
         recy.setAdapter(logListAdapter);
         recy.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-        serialHelper = new AbstractSerialHelper() {
-
-            @Override
-            protected void onDataReceived(ComBean comBean) {
-                logs.add(comBean);
-                Log.i(serialHelper.toString() + ":收到串口数据: ", "" + FuncUtil.ByteArrToHex(comBean.bRec));
-                recy.smoothScrollToPosition(logListAdapter.getItemCount() - 1);
-                logListAdapter.notifyDataSetChanged();
-            }
-        };
+       
 
 
         iniview();
@@ -163,7 +155,20 @@ public class SerialPortActivity extends FragmentActivity {
             public void onClick(View v) {
                 try {
                     closeInputMethod(SerialPortActivity.this, edInput);
+                    if (TextUtils.isEmpty(serialHelper.getPort())||serialHelper.getBaudRate()==0){
+                        return;
+                    }
                     serialHelper.close();
+                    serialHelper = new AbstractSerialHelper(serialHelper.getPort(),serialHelper.getBaudRate()) {
+
+                        @Override
+                        protected void onDataReceived(ComBean comBean) {
+                            logs.add(comBean);
+                            Log.i(serialHelper.toString() + ":收到串口数据: ", "" + FuncUtil.ByteArrToHex(comBean.bRec));
+                            recy.smoothScrollToPosition(logListAdapter.getItemCount() - 1);
+                            logListAdapter.notifyDataSetChanged();
+                        }
+                    };
                     serialHelper.open(false);
                     btOpen.setEnabled(false);
                 } catch (IOException e) {

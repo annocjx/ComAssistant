@@ -146,11 +146,11 @@ public abstract class AbstractSerialHelper {
         return sPort;
     }
 
-    public boolean setPort(String sPort) {
+    public boolean setPort(String port) {
         if (_isOpen) {
             return false;
         } else {
-            sPort = sPort;
+            sPort = port;
             return true;
         }
     }
